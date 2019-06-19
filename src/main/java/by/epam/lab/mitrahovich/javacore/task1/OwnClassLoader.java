@@ -1,6 +1,6 @@
 package by.epam.lab.mitrahovich.javacore.task1;
 
-import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -9,24 +9,36 @@ import java.io.InputStream;
 public class OwnClassLoader extends ClassLoader {
 
 	@Override
-	protected Class<?> findClass(String name) throws ClassNotFoundException {
+	public Class findClass(String name) throws ClassNotFoundException {
+		byte[] b = loadClassFromFile(name);
+		String packegeName = "by.epam.lab.mitrahovich.javacore.task1.";
+		return defineClass(packegeName + name, b, 0, b.length);
+	}
 
-		File file = new File(name + ".class");
+	private byte[] loadClassFromFile(String fileName) throws ClassNotFoundException {
+
+		File file = new File("src\\main\\java\\by\\epam\\lab\\mitrahovich\\javacore\\task1\\" + fileName + ".class");
+		System.out.println(fileName);
+		System.out.println(file.getAbsolutePath());
 		if (!file.isFile()) {
 			throw new ClassNotFoundException();
 		}
-		try (InputStream is = new BufferedInputStream(new FileInputStream(file))) {
-			byte b[] = new byte[(int) file.length()];
+		byte[] buffer;
 
-			is.read(b);
+		ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+		try {
+			InputStream inputStream = new FileInputStream(file);
 
-			return defineClass(name, b, 0, b.length);
+			int nextValue = 0;
 
+			while ((nextValue = inputStream.read()) != -1) {
+				byteStream.write(nextValue);
+			}
 		} catch (IOException e) {
-
-			return super.findClass(name);
+			e.printStackTrace();
 		}
-
+		buffer = byteStream.toByteArray();
+		return buffer;
 	}
 
 }
